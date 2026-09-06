@@ -1,4 +1,4 @@
-"""Berean AI configuration.
+"""Cyber-Holy-Spirit configuration.
 
 Forked from ai_tutor_be. Two deliberate departures from the parent project:
 

@@ -7,14 +7,43 @@
 *.key
 secrets/
 
-# ---- generated data ----------------------------------------------------
+# ---- databases ---------------------------------------------------------
 # The corpus is downloaded and indexed locally by `make ingest`, never
 # committed. It is ~290 MB and it is not ours to redistribute as a blob.
 api/data/
+chroma/
+*.db
+*.db-journal
+*.sqlite
 *.sqlite3
 *.sqlite3-*
-chroma/
+*.sqlite-wal
+*.sqlite-shm
+*.duckdb
+
+# ---- compiled / binary artefacts ---------------------------------------
+# A repository is source. Anything a build or a download produces belongs
+# outside it — these are the file types that quietly turn a 500 KB repo into
+# a multi-gigabyte one.
+*.so
+*.dylib
+*.dll
+*.o
+*.a
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.gguf
+*.bin
+*.h5
+*.npy
+*.npz
+*.tsbuildinfo
 *.json.bak
+*.bak
+*~
 
 # ---- python ------------------------------------------------------------
 __pycache__/

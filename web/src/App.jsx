@@ -397,7 +397,7 @@ export default function App() {
             <BookOpen size={18} className="text-slate-900" strokeWidth={2.5} />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-[15px] font-semibold tracking-tight">Berean AI</h1>
+            <h1 className="truncate text-[15px] font-semibold tracking-tight">Cyber-Holy-Spirit</h1>
             <p className="truncate text-[11px] text-slate-500">Scripture study, cited</p>
           </div>
         </div>

@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     yield
     con.close()
 
-app = FastAPI(title="Berean AI", lifespan=lifespan)
+app = FastAPI(title="Cyber-Holy-Spirit", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_credentials=True,
     allow_methods=["*"], allow_headers=["*"],
