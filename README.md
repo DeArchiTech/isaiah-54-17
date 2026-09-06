@@ -165,6 +165,21 @@ vector search returns David with no persecution; fusing them interleaves two
 half-right lists. Fixing that properly needs query decomposition or a
 knowledge-graph layer. It is a genuinely open problem and a good exercise.
 
+**The gate has two known holes** (found by a second model reviewing this repo,
+then confirmed by running them). Both are fixed in the follow-up commit, and
+both are worth understanding because they are the same shape:
+
+- A fabricated *book* — `[Hezekiah 3:1]` — never parses into a reference, so it
+  never enters the invalid list, so nothing strips its brackets. The check only
+  ever saw the citations it could already understand.
+- `exists()` is true when *any* verse in a range exists, so `[Romans 8:38-99]`
+  validates on the strength of verses 38 and 39.
+
+The lesson is not "we had bugs". It is that a guarantee is only as good as its
+weakest input path, and the tests that missed these called the stripping
+function directly instead of going through the code that decides whether to call
+it. Testing the mechanism is not the same as testing the property.
+
 **Also open:** lexical coverage is 10 hand-checked passages (the real fix is
 ingesting a Strong's-tagged text such as STEPBible TAHOT/TAGNT, CC-BY); the
 citation regex does not yet handle comma lists like `[1 Samuel 29:6, 9]`.
