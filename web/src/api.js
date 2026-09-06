@@ -106,7 +106,7 @@ export async function askBerean(query, translation, history = []) {
       id: `err_${Date.now()}_${idSeq++}`,
       text:
         e instanceof BackendDown
-          ? `${e.message}\n\nStart it with:\n\n    cd ~/Source/berean-be\n    withsecret anthropic /home/david/.venv/bin/uvicorn app:app --port 8000\n\nI will not answer from memory while it is down — inventing scripture is the one failure this app is built to prevent.`
+          ? `${e.message}\n\nStart it with:\n\n    make api\n\nI will not answer from memory while it is down — inventing scripture is the one failure this app is built to prevent.`
           : `The backend returned an error:\n\n${e.message}`,
       citations: [],
       sources: [],

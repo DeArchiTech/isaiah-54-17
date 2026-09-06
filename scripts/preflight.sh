@@ -34,7 +34,7 @@ fi
 # 3. Assigned-looking secrets that are not obvious placeholders.
 if hits=$(git diff --cached -U0 \
           | grep -nE '^\+.*(API_KEY|_TOKEN|_SECRET|PASSWORD)[[:space:]]*=[[:space:]]*[^[:space:]]' \
-          | grep -viE 'REPLACE_ME|YOUR_|<.*>|xxx+|example|placeholder|\$\{|os\.getenv|getenv\(|process\.env|=[[:space:]]*(""|'"''"'|$)' 2>/dev/null); then
+          | grep -viE 'REPLACE_ME|YOUR_|<.*>|xxx+|example|placeholder|os\.getenv|getenv\(|process\.env|=[[:space:]]*["'"'"']?(\$\{|\$\()|=[[:space:]]*(""|'"''"'|$)' 2>/dev/null); then
   say "REFUSED: assigned secret that is not a placeholder:"
   # Redact the VALUE, not just an unquoted token — a scanner that prints the
   # secret it found defeats its own purpose the moment you paste the output.

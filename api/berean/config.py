@@ -26,7 +26,7 @@ def _load_dotenv(path: Path) -> None:
     injected by CI, a container, or a secrets manager. It also means you can
     keep credentials out of the project directory entirely if you prefer:
 
-        withsecret anthropic make api
+        ANTHROPIC_API_KEY=$(pass show anthropic) make api
 
     Anything already set is left alone; quotes and `export` are tolerated.
     """
