@@ -165,20 +165,46 @@ vector search returns David with no persecution; fusing them interleaves two
 half-right lists. Fixing that properly needs query decomposition or a
 knowledge-graph layer. It is a genuinely open problem and a good exercise.
 
-**The gate has two known holes** (found by a second model reviewing this repo,
-then confirmed by running them). Both are fixed in the follow-up commit, and
-both are worth understanding because they are the same shape:
+## Homework
 
-- A fabricated *book* — `[Hezekiah 3:1]` — never parses into a reference, so it
-  never enters the invalid list, so nothing strips its brackets. The check only
-  ever saw the citations it could already understand.
-- `exists()` is true when *any* verse in a range exists, so `[Romans 8:38-99]`
-  validates on the strength of verses 38 and 39.
+The gate has real holes in it. They were found by a second model reviewing this
+repository and confirmed by running them, and they are left in deliberately —
+they are better exercises than anything I could invent, because each one is a
+case where the code looks correct and the guarantee still fails.
 
-The lesson is not "we had bugs". It is that a guarantee is only as good as its
-weakest input path, and the tests that missed these called the stripping
-function directly instead of going through the code that decides whether to call
-it. Testing the mechanism is not the same as testing the property.
+Every one has a failing test waiting to be written. If you want to know whether
+you have understood the idea in this repo, fix these.
+
+**1 · A fabricated book renders as verified.** *(hard)*
+`[Hezekiah 3:1]` never parses into a reference, so it never enters the invalid
+list, so nothing unwraps its brackets. If it is the only bad citation in a turn,
+it reaches the reader looking exactly like a checked one.
+*Hint: look at when `_strip_invalid` is called, not at what it does.*
+
+**2 · A range can validate on part of itself.** *(medium)*
+`store.exists()` is true when *any* verse in the range is present, so
+`[Romans 8:38-99]` passes on the strength of verses 38 and 39.
+*Hint: a contiguous span has a length you can predict.*
+
+**3 · A correct abbreviation gets stripped.** *(medium)*
+`[Phil 4:6]` is a valid citation that the gate removes, because stripping
+compares raw bracket text against canonical labels.
+*Hint: compare references, not strings.*
+
+**4 · Some real citations never become links.** *(easy)*
+The frontend regex misses multi-word books and en-dash ranges, so
+`[Song of Solomon 2:1]` and `[Philippians 4:6–7]` render as plain text.
+
+**5 · The CORS config is wrong.** *(easy)*
+`allow_origins=["*"]` with `allow_credentials=True` is forbidden by the Fetch
+spec, and Starlette works around it by echoing back whatever `Origin` it is
+given. Harmless on localhost. Not harmless copied into something real.
+
+The lesson underneath all five: **a guarantee is only as strong as its weakest
+input path.** The tests that missed these called the stripping function directly
+instead of going through the code that decides whether to call it. Testing the
+mechanism is not the same as testing the property — and this project is entirely
+about that distinction, so it is fitting that it got caught by it.
 
 **Also open:** lexical coverage is 10 hand-checked passages (the real fix is
 ingesting a Strong's-tagged text such as STEPBible TAHOT/TAGNT, CC-BY); the
