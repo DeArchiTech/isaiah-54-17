@@ -50,3 +50,36 @@ def test_reversed_range_is_normalised():
 def test_find_inline_ignores_non_references():
     text = "see [Romans 8:28] and [TODO] and [1] and [Hezekiah 1:1]"
     assert [r.label for r in find_inline(text)] == ["Romans 8:28"]
+
+
+# --- FTS query sanitising -------------------------------------------------
+# Regression tests. Each of these strings crashed the search layer at some
+# point; user questions are full of characters FTS5 treats as syntax.
+
+import pytest
+from berean import store
+
+
+@pytest.mark.parametrize("query", [
+    "Compare 'grace' in the OT vs NT",   # the app's own sample prompt
+    "What does the Bible say about anxiety?",
+    'He said "peace" to them',
+    "hope -- despair",
+    "NOT AND OR NEAR",
+    "don't be anxious",
+    "David's persecution",
+    "(grace)",
+    "",
+    "'",
+])
+def test_keyword_search_never_raises_on_user_input(con, query):
+    store.keyword_search(con, query, "BSB", limit=5)
+
+
+def test_internal_apostrophes_are_kept():
+    """Stripping every apostrophe would turn don't into two useless tokens."""
+    import re
+    from berean.store import _STOPWORDS
+    toks = [t for t in (w.strip("'") for w in re.findall(r"[A-Za-z0-9']+", "don't David's 'grace'"))
+            if len(t) > 2 and t.lower() not in _STOPWORDS]
+    assert toks == ["don't", "David's", "grace"]

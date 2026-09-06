@@ -53,3 +53,17 @@ def test_mixed_output_keeps_the_good_and_drops_the_bad(con):
     good, bad = store.validate(con, find_inline(text), "BSB")
     assert [r.label for r in good] == ["Philippians 4:6-7", "Romans 8:28"]
     assert [r.label for r in bad] == ["Philippians 9:1"]
+
+
+def test_placeholder_key_counts_as_unconfigured(monkeypatch):
+    """First run after `make setup` has a key variable that is set and useless.
+    Reporting that as configured trades a clear message for a 401."""
+    from berean import answer
+    monkeypatch.setattr(answer.os.path, "isdir", lambda p: False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-REPLACE_ME")
+    assert answer._has_model() is False
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-api03-" + "aBc9dEf2" * 6)
+    assert answer._has_model() is True
+    # a real key may contain a short run of x's — that must not read as a placeholder
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-api03-xxq" + "aBc9dEf2" * 6)
+    assert answer._has_model() is True

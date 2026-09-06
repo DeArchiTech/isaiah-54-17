@@ -15,6 +15,35 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO = ROOT.parent
+
+
+def _load_dotenv(path: Path) -> None:
+    """Minimal .env loader — no dependency, and the precedence is the point.
+
+    A real environment variable always wins over the file. That means the file
+    is a convenience for local development and never silently overrides a key
+    injected by CI, a container, or a secrets manager. It also means you can
+    keep credentials out of the project directory entirely if you prefer:
+
+        withsecret anthropic make api
+
+    Anything already set is left alone; quotes and `export` are tolerated.
+    """
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.removeprefix("export ").partition("=")
+        key, val = key.strip(), val.strip().strip("\"'")
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+_load_dotenv(REPO / ".env")
+
 DATA_DIR = Path(os.getenv("BEREAN_DATA_DIR", ROOT / "data"))
 
 VERSE_DB = DATA_DIR / "scripture.sqlite3"

@@ -26,6 +26,12 @@ _STOPWORDS = {
     "say", "says", "said", "tell", "does", "how", "why", "does", "bible",
     "scripture", "verse", "verses", "passage", "mean", "means", "regarding",
     "concerning", "does", "did", "such",
+    # Query verbs — they describe what the user wants done, not what they are
+    # looking for, so matching them just retrieves whichever verse happens to
+    # use the word. "Compare 'grace' in the OT vs NT" was returning
+    # 2 Corinthians 10:12 ("compare ourselves with").
+    "compare", "contrast", "difference", "differences", "between", "explain",
+    "describe", "summarise", "summarize", "list", "give", "show", "find",
 }
 
 SCHEMA = """
@@ -94,14 +100,22 @@ def keyword_search(con, query: str, translation: str, limit=20) -> list[dict]:
     # FTS5 treats ? " * - : ^ ( ) AND OR NOT NEAR as syntax. User questions are
     # full of them ("What does the Bible say about anxiety?"), so reduce the
     # query to bare word tokens before it ever reaches MATCH.
-    tokens = [w for w in re.findall(r"[A-Za-z0-9']+", query or "")
-              if len(w) > 2 and w.upper() not in _FTS_OPERATORS]
+    # Keep an internal apostrophe (don't, David's) but never an edge one: a
+    # bare leading quote opens a string literal to FTS5 and the whole MATCH
+    # fails. The app's own sample prompt — Compare 'grace' in the OT vs NT —
+    # crashed on exactly this.
+    tokens = [t for t in (w.strip("'") for w in re.findall(r"[A-Za-z0-9']+", query or ""))
+              if len(t) > 2 and t.upper() not in _FTS_OPERATORS]
     words = [w for w in tokens if w.lower() not in _STOPWORDS]
     if not words:
         words = tokens          # a query made entirely of stopwords: use it as-is
     if not words:
         return []
-    q = " OR ".join(words)
+    # Quote every term. FTS5 treats ' " * - : ^ ( ) as syntax in a BARE term —
+    # an apostrophe anywhere in `don't` opens a string literal and the whole
+    # MATCH fails with a parse error. A double-quoted term is taken literally,
+    # so the only thing left to escape is an embedded double quote (doubled).
+    q = " OR ".join('"{}"'.format(w.replace('"', '""')) for w in words)
     rows = con.execute(
         """SELECT book, chapter, verse, text, rank FROM verses_fts
            WHERE verses_fts MATCH ? AND translation = ?

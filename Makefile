@@ -1,7 +1,9 @@
 # isaiah-54-17 — an AI scripture-study app that verifies every citation.
 .DEFAULT_GOAL := help
 PY ?= python3
-VENV := .venv
+VENV := $(CURDIR)/.venv
+# Absolute: a relative ../.venv makes Python warn about sys.exec_prefix
+# whenever a target cd's into a subdirectory first.
 BIN  := $(VENV)/bin
 
 help: ## show this help
@@ -18,7 +20,7 @@ setup: ## create the venv, install deps, install the pre-commit hook
 	@echo "setup done. next: make ingest"
 
 ingest: ## download the public-domain corpus and build the index (~12 min once)
-	cd api && ../$(BIN)/python -m berean.ingest
+	cd api && $(BIN)/python -m berean.ingest
 
 hooks: ## install the secret-scanning pre-commit hook
 	@mkdir -p .git/hooks 2>/dev/null || true
@@ -31,10 +33,10 @@ check: ## run the secret scan against what is staged
 	@./scripts/preflight.sh
 
 test: ## run the test suite
-	cd api && ../$(BIN)/python -m pytest tests -q
+	cd api && $(BIN)/python -m pytest tests -q
 
 api: ## run the backend on :8000
-	cd api && ../$(BIN)/python -m uvicorn app:app --reload --port 8000
+	cd api && $(BIN)/python -m uvicorn app:app --reload --port 8000
 
 web: ## run the frontend on :5173
 	cd web && npm run dev

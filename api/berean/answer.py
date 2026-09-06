@@ -41,9 +41,24 @@ Rules, in order of priority:
    previous answer, and do not re-introduce material the reader already has."""
 
 
+# `make setup` writes .env from the template, so the very first run has a key
+# variable that is set and useless. Treating that as "configured" would trade a
+# clear message for a 401 on the first question anyone asks.
+# "XXXXXX" not "XXX" — a real key can contain three x's by chance, and
+# rejecting a valid key is a worse failure than accepting a placeholder.
+_PLACEHOLDERS = ("REPLACE_ME", "YOUR_", "XXXXXX", "CHANGEME", "<")
+
+
+def _real(value: str | None) -> bool:
+    if not value or len(value) < 25:
+        return False
+    return not any(p in value.upper() for p in _PLACEHOLDERS)
+
+
 def _has_model() -> bool:
-    if os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN"):
+    if _real(os.getenv("ANTHROPIC_API_KEY")) or _real(os.getenv("ANTHROPIC_AUTH_TOKEN")):
         return True
+    # An `ant auth login` profile works with no environment variable at all.
     return os.path.isdir(os.path.expanduser("~/.config/anthropic"))
 
 
