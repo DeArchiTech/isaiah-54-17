@@ -41,4 +41,7 @@ api: ## run the backend on :8000
 web: ## run the frontend on :5173
 	cd web && npm run dev
 
-.PHONY: help setup ingest hooks check test api web
+.PHONY: help setup ingest hooks check test api web demo
+
+demo: ## terminal demonstration of the citation gate (FAST=1 to skip pacing)
+	@cd api && FAST=$(FAST) $(BIN)/python ../scripts/demo_gate.py

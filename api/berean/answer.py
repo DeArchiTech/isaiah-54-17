@@ -106,12 +106,28 @@ def _format_retrieved(hits: list[dict]) -> str:
     return "\n\n".join(parts)
 
 
+# Anything shaped like a citation: a word or two, then digits:digits.
+_CITATION_SHAPED = re.compile(r"\[([^\[\]]{2,40}?\s\d+[:.]\d+(?:[-\u2013]\d+)?)\]")
+
+
 def _strip_invalid(text: str, bad: list[Ref]) -> str:
-    """Unwrap references that do not resolve, so they stop looking like links."""
+    """Unwrap every bracketed reference that did not survive validation.
+
+    Two populations, and the second is easy to miss. The first is references
+    that parse and do not resolve — Romans 8:99. The second is text shaped like
+    a reference that never parsed at all, because the book does not exist:
+    [Hezekiah 3:1]. Those never enter `bad`, so an earlier version left them
+    bracketed and they rendered looking exactly like a checked citation.
+
+    Brackets are the app's promise that something was verified. Nothing keeps
+    them unless it earned them.
+    """
     for r in bad:
         text = re.sub(r"\[\s*" + re.escape(r.label) + r"\s*\]", r.label, text)
-    # any remaining bracketed thing that parses as a ref but was not validated
-    return text
+
+    kept = {r.label for r in find_inline(text)}
+    return _CITATION_SHAPED.sub(
+        lambda m: m.group(0) if m.group(1).strip() in kept else m.group(1), text)
 
 
 def answer(con, query: str, translation: str, history: list[dict] | None = None) -> dict:

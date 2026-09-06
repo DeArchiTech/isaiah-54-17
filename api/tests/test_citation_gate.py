@@ -67,3 +67,25 @@ def test_placeholder_key_counts_as_unconfigured(monkeypatch):
     # a real key may contain a short run of x's — that must not read as a placeholder
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-api03-xxq" + "aBc9dEf2" * 6)
     assert answer._has_model() is True
+
+
+def test_a_fake_book_does_not_keep_its_brackets(con):
+    """Brackets are the promise that something was checked. [Hezekiah 3:1]
+    never parses, so it never enters the invalid list — it has to be caught by
+    shape, or it renders looking exactly like a verified citation."""
+    from berean.answer import _strip_invalid
+    text = "as in [Romans 8:28] and [Hezekiah 3:1] and [Romans 8:99]"
+    good, bad = store.validate(con, find_inline(text), "BSB")
+    out = _strip_invalid(text, bad)
+    assert "[Romans 8:28]" in out          # verified, keeps its brackets
+    assert "[Hezekiah 3:1]" not in out and "Hezekiah 3:1" in out
+    assert "[Romans 8:99]" not in out and "Romans 8:99" in out
+
+
+def test_stripping_leaves_ordinary_brackets_alone(con):
+    from berean.answer import _strip_invalid
+    text = "a note [see below] and [1] and [TODO] with [Romans 8:28]"
+    good, bad = store.validate(con, find_inline(text), "BSB")
+    out = _strip_invalid(text, bad)
+    assert "[see below]" in out and "[1]" in out and "[TODO]" in out
+    assert "[Romans 8:28]" in out
