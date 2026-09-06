@@ -1,0 +1,42 @@
+# ---- secrets -----------------------------------------------------------
+# Never commit a real key. `.env.example` is the template; `.env` is yours.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ---- generated data ----------------------------------------------------
+# The corpus is downloaded and indexed locally by `make ingest`, never
+# committed. It is ~290 MB and it is not ours to redistribute as a blob.
+api/data/
+*.sqlite3
+*.sqlite3-*
+chroma/
+*.json.bak
+
+# ---- python ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# ---- node --------------------------------------------------------------
+node_modules/
+dist/
+.vite/
+*.log
+npm-debug.log*
+
+# ---- media / scratch ---------------------------------------------------
+*.mp4
+*.webm
+*.png
+!docs/*.png
+demo/video*/
+.DS_Store
